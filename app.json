@@ -10,6 +10,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.spaekrgt.appmovil1",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -20,6 +21,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": ["expo-notifications"],
     "extra": {
       "eas": {
         "projectId": "bb4afda7-c51f-44ab-8b0b-849011186efb"

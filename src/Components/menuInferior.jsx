@@ -36,6 +36,9 @@ export default function MenuInferior({ pantallaActual, setPantallaActual, cantid
             <Pressable style={styles.opcion} onPress={() => setPantallaActual('sensores')}>
                 <Text style={pantallaActual === 'sensores' ? styles.activo : styles.texto}>Sensores</Text>
             </Pressable>
+            <Pressable style={styles.opcion} onPress={() => setPantallaActual('notificaciones')}>
+                <Text style={pantallaActual === 'notificaciones' ? styles.activo : styles.texto}>Avisos</Text>
+            </Pressable>
         </View>
     )
 }

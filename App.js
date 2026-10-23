@@ -7,6 +7,7 @@ import CatalogoScreen from './src/Screen/catalogoScreen';
 import CarritoScreen from './src/Screen/carritoScreen';
 import Sensores from './src/Components/sensores';
 import MenuInferior from './src/Components/menuInferior';
+import NotificacionesPush from './src/Screen/NotificacionesPush';
 
 export default function App() {
   const [sesionIniciada, setSesionIniciada] = useState(false);
@@ -42,6 +43,9 @@ export default function App() {
             {pantallaActual === 'carrito' && <CarritoScreen titulo="Mi carrito" subtitulo="Revisa tus productos" carrito={carrito} onCambiarCantidad={cambiarCantidad} />}
             <View style={[styles.contenido, pantallaActual !== 'sensores' && styles.oculta]}>
               <Sensores activo={pantallaActual === 'sensores'} />
+            </View>
+            <View style={[styles.contenido, pantallaActual !== 'notificaciones' && styles.oculta]}>
+              <NotificacionesPush />
             </View>
             <MenuInferior pantallaActual={pantallaActual} setPantallaActual={setPantallaActual} cantidadCarrito={carrito.reduce((total, item) => total + item.cantidad, 0)} />
           </>
