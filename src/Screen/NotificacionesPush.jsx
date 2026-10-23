@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { obtenerNotificaciones, notificarSolicitudRegistrada, registrarDispositivo, solicitarPermisos } from '../services/notificaciones';
+import { ES_EXPO_GO, diagnosticarNotificaciones, obtenerNotificaciones, notificarSolicitudRegistrada, registrarDispositivo, solicitarPermisos } from '../services/notificaciones';
 
 export default function NotificacionesPush() {
+  const diagnostico = diagnosticarNotificaciones();
   const [token, setToken] = useState('');
   const [mostrarToken, setMostrarToken] = useState(false);
   const [estado, setEstado] = useState('Pendiente: solicita permiso para comenzar.');
@@ -12,6 +13,10 @@ export default function NotificacionesPush() {
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
+    if (diagnostico) {
+      setEstado(diagnostico);
+      return;
+    }
     let Notifications;
     try {
       Notifications = obtenerNotificaciones();
@@ -27,7 +32,7 @@ export default function NotificacionesPush() {
     const pulsada = Notifications.addNotificationResponseReceivedListener(actualizarInteraccion);
     actualizarInteraccion(Notifications.getLastNotificationResponse());
     return () => { recibida.remove(); pulsada.remove(); };
-  }, []);
+  }, [diagnostico]);
 
   async function ejecutar(tarea) {
     setOcupado(true);
@@ -49,11 +54,12 @@ export default function NotificacionesPush() {
       <Text style={styles.descripcion}>Práctica Android · permisos, avisos locales y token Expo.</Text>
       <View style={styles.tarjeta}>
         <Text style={styles.subtitulo}>1. Permisos y prueba local</Text>
-        <Button title="Solicitar permisos" disabled={ocupado} onPress={() => ejecutar(async () => {
+        {diagnostico ? <Text style={styles.descripcion}>{diagnostico}</Text> : null}
+        <Button title="Solicitar permisos" disabled={ocupado || Boolean(diagnostico)} onPress={() => ejecutar(async () => {
           await solicitarPermisos();
           setEstado('Permiso concedido. Ya puedes probar el aviso local.');
         })} />
-        <Button title="Probar notificación local" disabled={ocupado} onPress={() => ejecutar(async () => {
+        <Button title="Probar notificación local" disabled={ocupado || Boolean(diagnostico)} onPress={() => ejecutar(async () => {
           await solicitarPermisos();
           await notificarSolicitudRegistrada();
           setEstado('Notificación local enviada. Esta es una prueba; no se guardó una solicitud.');
@@ -62,8 +68,8 @@ export default function NotificacionesPush() {
       </View>
       <View style={styles.tarjeta}>
         <Text style={styles.subtitulo}>2. Registro push remoto</Text>
-        <Text style={styles.descripcion}>Necesita Firebase y una build de desarrollo instalada en Android. En Expo Go utiliza la prueba local.</Text>
-        <Button title="Obtener token Expo" disabled={ocupado} onPress={() => ejecutar(async () => {
+        <Text style={styles.descripcion}>{ES_EXPO_GO ? 'Estás en Expo Go. El registro remoto está deshabilitado: instala la APK de desarrollo y configura Firebase para obtener el token.' : 'El registro remoto necesita Firebase configurado en esta build de desarrollo.'}</Text>
+        <Button title="Obtener token Expo" disabled={ocupado || ES_EXPO_GO || Boolean(diagnostico)} onPress={() => ejecutar(async () => {
           setToken('');
           setMostrarToken(false);
           setEstado('Registrando dispositivo…');

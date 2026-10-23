@@ -10,6 +10,16 @@ El servicio `src/services/notificaciones.js` configura la presentación en prime
 
 ## Prueba local
 
+Actualización tras la prueba real en Expo Go SDK 57: el teléfono reportó una `NullPointerException` en `setNotificationChannelAsync` porque no estaba registrado `NotificationsChannelsProvider`. Separar las importaciones no resuelve esa ausencia nativa. La pantalla ahora detecta el proveedor ausente y deshabilita las pruebas que no puede ejecutar; también deshabilita el token remoto en Expo Go. Para este dispositivo, usar una APK de desarrollo propia siguiendo los pasos siguientes. La prueba local en esa APK no necesita Firebase.
+
+```powershell
+eas build --platform android --profile development
+# Instalar la APK del enlace de EAS en el teléfono y luego ejecutar:
+npx expo start --dev-client
+```
+
+Abre la aplicación APP-Movil-1 instalada desde la APK y conecta con Metro. Para la prueba local puedes crear esta build antes de configurar Firebase. Para la prueba remota deberás configurar Firebase y generar otra build.
+
 1. Ejecuta `npx expo start` y abre el proyecto en Android.
 2. Inicia sesión con las credenciales de prueba existentes: `spark@cliente.com` / `12345`.
 3. Abre **Avisos**, pulsa **Solicitar permisos** y acepta el permiso del sistema.
@@ -21,7 +31,7 @@ La prueba local no demuestra el funcionamiento de push remoto. Las pruebas en el
 
 ## Firebase y build pendientes
 
-El usuario confirmó que todavía no dispone de Firebase ni de una API de solicitudes. No se han creado credenciales, realizado compilaciones en EAS ni enviado notificaciones remotas.
+El usuario confirmó que todavía no dispone de Firebase ni de una API de solicitudes. Con su autorización se generó la clave de firma Android en EAS y se envió una build development el 23 de octubre de 2026: https://expo.dev/accounts/spaekrgt/projects/APP-Movil-1/builds/c1d8fefe-d563-42f1-b740-d075627782af . Comprobar su estado en ese enlace e instalar la APK cuando esté disponible. No se han configurado credenciales Firebase ni enviado notificaciones remotas.
 
 1. En https://console.firebase.google.com crea un proyecto y agrega una aplicación Android con el paquete **com.spaekrgt.appmovil1**, exactamente igual a `app.json`.
 2. Descarga `google-services.json` y colócalo en la raíz. Después agrega `"googleServicesFile": "./google-services.json"` dentro de `expo.android` en `app.json`, junto a `package` y `adaptiveIcon`. No agregues la ruta antes de que exista el archivo.

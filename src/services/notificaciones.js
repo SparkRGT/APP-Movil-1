@@ -1,10 +1,21 @@
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
+import { requireOptionalNativeModule } from 'expo';
 
 export const CANAL_SOLICITUDES = 'default';
 
 let moduloNotificaciones;
+
+export const ES_EXPO_GO = Constants.executionEnvironment === 'storeClient';
+
+export function diagnosticarNotificaciones() {
+  if (Platform.OS !== 'android') return 'Esta práctica está preparada para Android.';
+  if (!requireOptionalNativeModule('NotificationsChannelsProvider')) {
+    return 'La app instalada no incluye el proveedor nativo de canales de notificación. Instala la APK de desarrollo del proyecto y ábrela con npx expo start --dev-client. Reiniciar Metro o cambiar permisos no instala ese módulo.';
+  }
+  return '';
+}
 
 export function obtenerNotificaciones() {
   if (Platform.OS !== 'android') throw new Error('Esta práctica está preparada para Android.');
@@ -23,6 +34,8 @@ export function obtenerNotificaciones() {
 }
 
 export async function solicitarPermisos() {
+  const diagnostico = diagnosticarNotificaciones();
+  if (diagnostico) throw new Error(diagnostico);
   const Notifications = obtenerNotificaciones();
   if (Platform.OS !== 'android') {
     throw new Error('Esta práctica está preparada para Android.');
@@ -44,8 +57,8 @@ export async function solicitarPermisos() {
 }
 
 export async function registrarDispositivo() {
-  if (Constants.executionEnvironment === 'storeClient') {
-    throw new Error('Expo Go permite la prueba local, pero el token push requiere una build de desarrollo con Firebase.');
+  if (ES_EXPO_GO) {
+    throw new Error('El token push requiere la APK de desarrollo y Firebase. No está disponible en Expo Go.');
   }
   if (!Device.isDevice) {
     throw new Error('Usa un Android físico para la demostración de esta práctica.');
@@ -60,6 +73,8 @@ export async function registrarDispositivo() {
 // Reutilizar SOLO después de que la API confirme el guardado de una solicitud.
 // No pide permisos en el flujo de guardado: se solicitan previamente en la pantalla.
 export async function notificarSolicitudRegistrada(id) {
+  const diagnostico = diagnosticarNotificaciones();
+  if (diagnostico) throw new Error(diagnostico);
   const Notifications = obtenerNotificaciones();
   if (Platform.OS !== 'android') throw new Error('Notificaciones disponibles en Android.');
   const permiso = await Notifications.getPermissionsAsync();
