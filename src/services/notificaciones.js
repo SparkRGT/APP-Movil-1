@@ -86,6 +86,6 @@ export async function notificarSolicitudRegistrada(id) {
       sound: 'default',
       data: { pantalla: 'solicitudes', tipo: 'solicitud_creada', ...(id != null ? { id } : {}) },
     },
-    trigger: { channelId: CANAL_SOLICITUDES },
+    trigger: null, // null = mostrar de inmediato; requerido por expo-notifications 57.
   });
 }

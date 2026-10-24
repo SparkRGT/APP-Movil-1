@@ -1,8 +1,43 @@
-import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native'
+import { View, Text, StyleSheet, FlatList, Pressable, Alert } from 'react-native'
+import { useState } from 'react'
 import Titulo from '../Components/titulo'
+import { notificarSolicitudRegistrada, solicitarPermisos } from '../services/notificaciones'
 
 export default function CarritoScreen({ titulo, subtitulo, carrito = [], onCambiarCantidad }) {
+  const [confirmando, setConfirmando] = useState(false)
   const total = carrito.reduce((suma, item) => suma + item.precio * item.cantidad, 0)
+
+  /**
+   * Simula el guardado de un pedido y dispara la notificación local
+   * SOLO después de recibir confirmación de éxito (sección 11 de la guía).
+   */
+  async function confirmarPedido() {
+    if (carrito.length === 0) {
+      Alert.alert('Carrito vacío', 'Agrega productos antes de confirmar.')
+      return
+    }
+    setConfirmando(true)
+    try {
+      // Solicitar permisos si aún no se han otorgado.
+      await solicitarPermisos()
+
+      // --- Simula la llamada al servidor ---
+      // En producción reemplaza este bloque por: await api.post('/pedidos', { carrito })
+      await new Promise((resolve) => setTimeout(resolve, 800))
+      const exitoso = true // resultado simulado del servidor
+      // ------------------------------------
+
+      if (exitoso) {
+        // La notificación se dispara SOLO tras la confirmación de éxito del servidor.
+        await notificarSolicitudRegistrada()
+        Alert.alert('Pedido confirmado', 'Tu pedido fue registrado correctamente.')
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message || 'No se pudo registrar el pedido.')
+    } finally {
+      setConfirmando(false)
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -40,9 +75,20 @@ export default function CarritoScreen({ titulo, subtitulo, carrito = [], onCambi
             </View>
           )}
           ListFooterComponent={
-            <View style={styles.total}>
-              <Text style={styles.totalEtiqueta}>Total</Text>
-              <Text style={styles.totalValor}>${total.toFixed(2)}</Text>
+            <View>
+              <View style={styles.total}>
+                <Text style={styles.totalEtiqueta}>Total</Text>
+                <Text style={styles.totalValor}>${total.toFixed(2)}</Text>
+              </View>
+              <Pressable
+                style={[styles.botonConfirmar, confirmando && styles.botonDeshabilitado]}
+                disabled={confirmando}
+                onPress={confirmarPedido}
+              >
+                <Text style={styles.textoBoton}>
+                  {confirmando ? 'Confirmando…' : 'Confirmar pedido'}
+                </Text>
+              </Pressable>
             </View>
           }
         />
@@ -139,5 +185,21 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#007AFF',
+  },
+  botonConfirmar: {
+    backgroundColor: '#007AFF',
+    padding: 14,
+    borderRadius: 10,
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  botonDeshabilitado: {
+    backgroundColor: '#9ec7f5',
+  },
+  textoBoton: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 16,
   },
 });
